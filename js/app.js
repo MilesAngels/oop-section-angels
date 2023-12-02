@@ -136,16 +136,16 @@ class App {
         this._tracker = new CalorieTracker();
 
         // Event listener for meal form to add new meal that is created by user to the DOM
-        document.getElementById('meal-form').addEventListener('submit', this._newMeal.bind(this));
+        document.getElementById('meal-form').addEventListener('submit', this._newItem.bind(this, 'meal'));
 
-        document.getElementById('workout-form').addEventListener('submit', this._newWorkout.bind(this));
+        document.getElementById('workout-form').addEventListener('submit', this._newItem.bind(this, 'workout'));
     }
 
-    _newMeal(event) {
+    _newItem(type, event) {
         event.preventDefault();
 
-        const name = document.getElementById('meal-name');
-        const calories = document.getElementById('meal-calories');
+        const name = document.getElementById(`${type}-name`);
+        const calories = document.getElementById(`${type}-calories`);
 
         // Validate input for name and calories
         // - alert user if one or more fields are empty
@@ -154,45 +154,25 @@ class App {
             return;
         }
 
-        // Create new instance of meal and get name value and calories value (number)
-        const meal = new Meal(name.value, +calories.value);
-        this._tracker.addMeal(meal);
-
-        // Reset form
-        name.value = '';
-        calories.value = '';
-
-        // Collapse meal form on submit
-        const collapseMeal = document.getElementById('collapse-meal');
-        const bsCollapse = new bootstrap.Collapse(collapseMeal, {
-            toggle: true
-        });
-    }
-
-    _newWorkout(event) {
-        event.preventDefault();
-
-        const name = document.getElementById('workout-name');
-        const calories = document.getElementById('workout-calories');
-
-        // Validate input for name and calories
-        // - alert user if one or more fields are empty
-        if(name.value === '' || calories.value === '') {
-            alert('Please fill in all fields');
-            return;
+        if(type === 'meal') {
+            // Create new instance of meal and get name value and calories value (number)
+            const meal = new Meal(name.value, +calories.value);
+            this._tracker.addMeal(meal);
         }
+        else {
+            // Create new instance of workout and get name value and calories value (number)
+            const workout = new Workout(name.value, +calories.value);
+            this._tracker.addWorkout(workout);
+        }
+        
 
-        // Create new instance of meal and get name value and calories value (number)
-        const workout = new Workout(name.value, +calories.value);
-        this._tracker.addWorkout(workout);
-
-        // Reset form
+        // Clear form
         name.value = '';
         calories.value = '';
 
         // Collapse workout form on submit
-        const collapseWorkout = document.getElementById('collapse-workout');
-        const bsCollapse = new bootstrap.Collapse(collapseWorkout, {
+        const collapseItem = document.getElementById(`collapse-${type}`);
+        const bsCollapse = new bootstrap.Collapse(collapseItem, {
             toggle: true
         });
     
