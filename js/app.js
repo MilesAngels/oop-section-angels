@@ -1,7 +1,3 @@
-class App {
-
-}
-
 // Calorie Tracker Class
 class CalorieTracker {
     constructor() {
@@ -15,6 +11,7 @@ class CalorieTracker {
         this._displayCaloriesConsumed();
         this._displayCaloriesBurned();
         this._displayCaloriesRemaining();
+        this._displayCaloriesProgress();
     }
 
     // Public Methods / API
@@ -73,12 +70,34 @@ class CalorieTracker {
         caloriesBurnedEl.innerHTML = burned;
     }
 
+    // Display the calories remaining by subtracting the current total calories from the calorie limit
     _displayCaloriesRemaining() {
         const caloriesRemainingEl = document.getElementById('calories-remaining');
+        const progressEl = document.getElementById('calorie-progress');
 
         const remaining = this._calorieLimit - this._totalCalories;
 
         caloriesRemainingEl.innerHTML = remaining;
+
+        if(remaining <= 0) {
+            caloriesRemainingEl.parentElement.parentElement.classList.remove('bg-light');
+            caloriesRemainingEl.parentElement.parentElement.classList.add('bg-danger');
+            progressEl.classList.remove('bg-success');
+            progressEl.classList.add('bg-danger');
+        }
+        else {
+            caloriesRemainingEl.parentElement.parentElement.classList.remove('bg-danger');
+            caloriesRemainingEl.parentElement.parentElement.classList.add('bg-light');
+        }
+    }
+
+    // Display the calorie progress by updating the progress bar
+    _displayCaloriesProgress() {
+        const progressEl = document.getElementById('calorie-progress');
+        const percentage = (this._totalCalories / this._calorieLimit) * 100;
+        const width = Math.min(percentage, 100);
+
+        progressEl.style.width = `${width}%`;
     }
 
     _render() {
@@ -86,6 +105,7 @@ class CalorieTracker {
         this._displayCaloriesConsumed();
         this._displayCaloriesBurned();
         this._displayCaloriesRemaining();
+        this._displayCaloriesProgress();
     }
 
 }
@@ -109,19 +129,79 @@ class Workout {
     }
 }
 
+// App Class
+class App {
+    constructor() {
+        // Instantiate new calorie tracker class
+        this._tracker = new CalorieTracker();
+
+        // Event listener for meal form to add new meal that is created by user to the DOM
+        document.getElementById('meal-form').addEventListener('submit', this._newMeal.bind(this));
+
+        document.getElementById('workout-form').addEventListener('submit', this._newWorkout.bind(this));
+    }
+
+    _newMeal(event) {
+        event.preventDefault();
+
+        const name = document.getElementById('meal-name');
+        const calories = document.getElementById('meal-calories');
+
+        // Validate input for name and calories
+        // - alert user if one or more fields are empty
+        if(name.value === '' || calories.value === '') {
+            alert('Please fill in all fields');
+            return;
+        }
+
+        // Create new instance of meal and get name value and calories value (number)
+        const meal = new Meal(name.value, +calories.value);
+        this._tracker.addMeal(meal);
+
+        // Reset form
+        name.value = '';
+        calories.value = '';
+
+        // Collapse meal form on submit
+        const collapseMeal = document.getElementById('collapse-meal');
+        const bsCollapse = new bootstrap.Collapse(collapseMeal, {
+            toggle: true
+        });
+    }
+
+    _newWorkout(event) {
+        event.preventDefault();
+
+        const name = document.getElementById('workout-name');
+        const calories = document.getElementById('workout-calories');
+
+        // Validate input for name and calories
+        // - alert user if one or more fields are empty
+        if(name.value === '' || calories.value === '') {
+            alert('Please fill in all fields');
+            return;
+        }
+
+        // Create new instance of meal and get name value and calories value (number)
+        const workout = new Workout(name.value, +calories.value);
+        this._tracker.addWorkout(workout);
+
+        // Reset form
+        name.value = '';
+        calories.value = '';
+
+        // Collapse workout form on submit
+        const collapseWorkout = document.getElementById('collapse-workout');
+        const bsCollapse = new bootstrap.Collapse(collapseWorkout, {
+            toggle: true
+        });
+    
+    }
+}
+
+
 class Storage {
 
 }
 
-const tracker = new CalorieTracker();
-const breakfast = new Meal('Breakfast', 400);
-
-
-tracker.addMeal(breakfast);
-
-const run = new Workout('Morning Run', 320);
-tracker.addWorkout(run);
-
-console.log(tracker._meals);
-console.log(tracker._workouts);
-console.log(tracker._totalCalories)
+const app = new App();
