@@ -1,7 +1,7 @@
 // Calorie Tracker Class
 class CalorieTracker {
     constructor() {
-        this._calorieLimit = 2000;
+        this._calorieLimit = Storage.getCalorieLimit();
         this._totalCalories = 0;
         this._meals = [];
         this._workouts = [];
@@ -69,6 +69,13 @@ class CalorieTracker {
         this._render();
     }
 
+    setLimit(calorieLimit) {
+        this._calorieLimit = calorieLimit;
+        Storage.setCalorieLimit(calorieLimit);
+        this._displayCaloriesLimit();
+        this._render();
+    }
+
     // Private Methods/ API
 
     // Display the total calories to DOM
@@ -79,8 +86,8 @@ class CalorieTracker {
 
     // Display the calorie limit to DOM
     _displayCaloriesLimit() {
-        const caloriesLimitEL = document.getElementById('calories-limit');
-        caloriesLimitEL.innerHTML = this._calorieLimit;
+        const calorieLimitEL = document.getElementById('calories-limit');
+        calorieLimitEL.innerHTML = this._calorieLimit;
     }
 
     // Display the calories consumed
@@ -178,7 +185,9 @@ class CalorieTracker {
     }
 
     _render() {
+        
         this._displayCaloriesTotal();
+        this._displayCaloriesLimit();
         this._displayCaloriesConsumed();
         this._displayCaloriesBurned();
         this._displayCaloriesRemaining();
@@ -206,6 +215,25 @@ class Workout {
     }
 }
 
+// Storage Class
+class Storage {
+    static getCalorieLimit(defaultLimit = 2000) {
+        let calorieLimit;
+        if(localStorage.getItem('calorieLimit') == null) {
+            calorieLimit = defaultLimit;
+        }
+        else{
+            calorieLimit = +localStorage.getItem('calorieLimit');
+        }
+
+        return calorieLimit;
+    }
+
+    static setCalorieLimit(calorieLimit) {
+        localStorage.setItem('calorieLimit', calorieLimit);
+    }
+}
+
 // App Class
 class App {
     constructor() {
@@ -226,6 +254,9 @@ class App {
         document.getElementById('filter-workouts').addEventListener('keyup', this._filterItems.bind(this, 'workout'));
 
         document.getElementById('reset').addEventListener('click', this._reset.bind(this));
+
+        document.getElementById('limit-form').addEventListener('submit', this._setLimit.bind(this));
+        
     }
 
     _newItem(type, event) {
@@ -284,7 +315,7 @@ class App {
         document.querySelectorAll(`#${type}-items .card`).forEach(item => {
             const name = item.firstElementChild.firstElementChild.textContent;
 
-            if(name.toLowerCase().indexOf(text) !== -1) {
+            if (name.toLowerCase().indexOf(text) !== -1) {
                 item.style.display = 'block';
             }
             else {
@@ -300,11 +331,26 @@ class App {
         document.getElementById('filter-meals').value = '';
         document.getElementById('filter-workouts').value = '';
     }
+
+    _setLimit(event) {
+        event.preventDefault();
+        const limit = document.getElementById('limit');
+        if(limit.value === '') {
+            alert('Please add a limit.');
+            return;
+        }
+
+        this._tracker.setLimit(+limit.value);
+        limit.value = '';
+
+
+        const modalEl = document.getElementById('limit-modal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        modal.hide();
+
+    }
+
 }
 
-
-class Storage {
-
-}
 
 const app = new App();
