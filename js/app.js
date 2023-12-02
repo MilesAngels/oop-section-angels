@@ -45,6 +45,11 @@ class CalorieTracker {
     }
 
     // Remove meal from DOM
+    // - Look for specific id of meal and check if the id being passed is the same as the meal id
+    // - Check if the meal we are looking for is in storage
+    // - Subtract meal calories from total calories and update the total calories from local storage
+    // - Remove the meal from the DOM and local storage
+    // - Reload DOM
     removeMeal(id) {
         const index = this._meals.findIndex((meal) => meal.id === id);
 
@@ -59,6 +64,11 @@ class CalorieTracker {
     }
 
     // Remove workout from DOM
+    // - Look for specific id of workout and check if the id being passed is the same as the workout id
+    // - Check if the workout we are looking for is in storage
+    // - Subtract workout calories from total calories and update the total calories from local storage
+    // - Remove the workout from the DOM and local storage
+    // - Reload DOM 
     removeWorkout(id) {
         const index = this._workouts.findIndex((workout) => workout.id === id);
 
@@ -72,6 +82,9 @@ class CalorieTracker {
         }
     }
 
+    // Reset items
+    // - Reset values of total calories, meals, snd workouts
+    // - Reload DOM
     reset() {
         this._totalCalories = 0;
         this._meals = [];
@@ -79,6 +92,9 @@ class CalorieTracker {
         this._render();
     }
 
+    // Set the calorie limit
+    // - Save the calorie limit being passed to local storage
+    // - Reload DOM
     setLimit(calorieLimit) {
         this._calorieLimit = calorieLimit;
         Storage.setCalorieLimit(calorieLimit);
@@ -86,10 +102,13 @@ class CalorieTracker {
         this._render();
     }
 
+    // Load items into the DOM
     loadItems() {
         this._meals.forEach(meal => this._displayNewMeal(meal));
         this._workouts.forEach(workout => this._displayNewWorkout(workout));
     }
+
+
     // Private Methods/ API
 
     // Display the total calories to DOM
@@ -114,7 +133,7 @@ class CalorieTracker {
         caloriesConsumedEl.innerHTML = consumed;
     }
 
-    // Display the calories burned
+    // Display the calories burned and ser it to 0 if there are no workout calories
     _displayCaloriesBurned() {
         const caloriesBurnedEl = document.getElementById('calories-burned');
 
@@ -124,7 +143,8 @@ class CalorieTracker {
         caloriesBurnedEl.innerHTML = burned;
     }
 
-    // Display the calories remaining by subtracting the current total calories from the calorie limit
+    // Display the calories remaining via progress bar and element
+    // - Subtract the current total calories from the calorie limit
     _displayCaloriesRemaining() {
         const caloriesRemainingEl = document.getElementById('calories-remaining');
         const progressEl = document.getElementById('calorie-progress');
@@ -154,6 +174,7 @@ class CalorieTracker {
         progressEl.style.width = `${width}%`;
     }
 
+    // Display newly added meal in DOM and append it's child element to the parent element
     _displayNewMeal(meal) {
         const mealsEl = document.getElementById('meal-items');
         const mealEl = document.createElement('div');
@@ -176,6 +197,7 @@ class CalorieTracker {
         mealsEl.appendChild(mealEl);
     }
 
+    // Display the newly added workout to the DOM and append it's child element to the parent element
     _displayNewWorkout(workout) {
         const workoutsEl = document.getElementById('workout-items');
         const workoutEl = document.createElement('div');
@@ -198,6 +220,7 @@ class CalorieTracker {
         workoutsEl.appendChild(workoutEl);
     }
 
+    // Reload DOM to update values
     _render() {
         
         this._displayCaloriesTotal();
@@ -222,7 +245,7 @@ class Meal {
 
 class Workout {
     constructor(name, calories) {
-        // Create random id for each meal and make sure that numbers are after the 0
+        // Create random id for each workout and make sure that numbers are after the 0
         this.id = Math.random().toString(16).slice(2);
         this.name = name;
         this.calories = calories
@@ -231,6 +254,9 @@ class Workout {
 
 // Storage Class
 class Storage {
+    // Get the calorie limit from the local storage
+    // - If the user does not specify calorie limit, default value will be used
+    // - If the user specifies the calorie limit then add the value to local storage
     static getCalorieLimit(defaultLimit = 2000) {
         let calorieLimit;
         if(localStorage.getItem('calorieLimit') == null) {
@@ -243,10 +269,14 @@ class Storage {
         return calorieLimit;
     }
 
+    // Set the calorie limit in local storage
     static setCalorieLimit(calorieLimit) {
         localStorage.setItem('calorieLimit', calorieLimit);
     }
 
+    // Get the total calories from local storage
+    // - If there is no value for totalCalories, then set it to the default value
+    // - Else, set the value of totalCalories to the value from local storage
     static getTotalCalories(defaultCalories = 0) {
         let totalCalories;
         if(localStorage.getItem('totalCalories') == null) {
@@ -259,10 +289,14 @@ class Storage {
         return totalCalories;
     }
 
+    // Update total calories in local storage
     static updateTotalCalories(calories) {
         localStorage.setItem('totalCalories', calories);
     }
 
+    // Get meals from local storage
+    // - If there are no meals in local storage then set the meals to an empty array
+    // - Else, parse and get the meals from local storage
     static getMeals() {
         let meals;
         if(localStorage.getItem('meals') == null) {
@@ -275,12 +309,14 @@ class Storage {
         return meals;
     }
 
+    // Save the meal to local storage as strings
     static saveMeal(meal) {
         const meals = Storage.getMeals();
         meals.push(meal);
         localStorage.setItem('meals', JSON.stringify(meals));
     }
 
+    // Remove the meal from local storage by checking it's id
     static removeMeal(id) {
         const meals = Storage.getMeals();
         meals.forEach((meal, index) => {
@@ -292,6 +328,9 @@ class Storage {
         localStorage.setItem('meals', JSON.stringify(meals));
     }
 
+    // Get the workout from local storage
+    // - If there are no workouts in local storage then set the workouts to an empty array
+    // - Else, parse and get the workouts from local storage
     static getWorkouts() {
         let workouts;
         if(localStorage.getItem('workouts') == null) {
@@ -304,12 +343,14 @@ class Storage {
         return workouts;
     }
 
+    // Save workout to local storage as string
     static saveWorkouts(workout) {
         const workouts = Storage.getWorkouts();
         workouts.push(workout);
         localStorage.setItem('workouts', JSON.stringify(workouts));
     }
 
+    // Remove the workout from local storage by checking it's id
     static removeWorkout(id) {
         const workouts = Storage.getWorkouts();
         workouts.forEach((workout, index) => {
@@ -321,6 +362,7 @@ class Storage {
         localStorage.setItem('workouts', JSON.stringify(workouts));
     }
 
+    // Clear total calories, meals, and workouts from local storage
     static clearAll() {
         localStorage.removeItem('totalCalories');
         localStorage.removeItem('meals');
@@ -342,8 +384,9 @@ class App {
         this._tracker.loadItems();
     }
 
+    // Load all event listeners
     _loadEventListeners() {
-        // Event listener for meal form to add new meal that is created by user to the DOM
+    
         document.getElementById('meal-form').addEventListener('submit', this._newItem.bind(this, 'meal'));
 
         document.getElementById('workout-form').addEventListener('submit', this._newItem.bind(this, 'workout'));
@@ -361,6 +404,7 @@ class App {
         document.getElementById('limit-form').addEventListener('submit', this._setLimit.bind(this));
     }
 
+    // Create and Add new workout or meal to DOM
     _newItem(type, event) {
         event.preventDefault();
 
@@ -398,6 +442,7 @@ class App {
 
     }
 
+    // Remove item from DOM
     _removeItem(type, event) {
         if (event.target.classList.contains('delete') || event.target.classList.contains('fa-xmark')) {
             if (confirm('Are you sure you want to delete this item?')) {
@@ -412,6 +457,7 @@ class App {
         }
     }
 
+    // Filter items
     _filterItems(type, event) {
         const text = event.target.value.toLowerCase();
         document.querySelectorAll(`#${type}-items .card`).forEach(item => {
@@ -426,6 +472,7 @@ class App {
         });
     }
 
+    // Reset all items in the app
     _reset() {
         this._tracker.reset();
         document.getElementById('meal-items').innerHTML = '';
@@ -435,6 +482,7 @@ class App {
         document.getElementById('filter-workouts').value = '';
     }
 
+    // Set the calorie limit
     _setLimit(event) {
         event.preventDefault();
         const limit = document.getElementById('limit');
