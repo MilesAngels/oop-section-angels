@@ -15,7 +15,7 @@ class CalorieTracker {
     }
 
     // Public Methods / API
-    
+
     // Add Meal Method
     // - Add new meals to meals array
     // - Add calories gained to the total calories
@@ -36,6 +36,30 @@ class CalorieTracker {
         this._totalCalories -= workout.calories;
         this._displayNewWorkout(workout);
         this._render();
+    }
+
+    // Remove meal from DOM
+    removeMeal(id) {
+        const index = this._meals.findIndex((meal) => meal.id === id);
+
+        if (index !== -1) {
+            const meal = this._meals[index];
+            this._totalCalories -= meal.calories;
+            this._meals.splice(index, 1);
+            this._render();
+        }
+    }
+
+    // Remove meal from DOM
+    removeWorkout(id) {
+        const index = this._workouts.findIndex((workout) => workout.id === id);
+
+        if (index !== -1) {
+            const workout = this._workouts[index];
+            this._totalCalories += workout.calories;
+            this._workouts.splice(index, 1);
+            this._render();
+        }
     }
 
     // Private Methods/ API
@@ -81,7 +105,7 @@ class CalorieTracker {
 
         caloriesRemainingEl.innerHTML = remaining;
 
-        if(remaining <= 0) {
+        if (remaining <= 0) {
             caloriesRemainingEl.parentElement.parentElement.classList.remove('bg-light');
             caloriesRemainingEl.parentElement.parentElement.classList.add('bg-danger');
             progressEl.classList.remove('bg-success');
@@ -121,7 +145,7 @@ class CalorieTracker {
         </div>
       </div>`;
 
-      mealsEl.appendChild(mealEl);
+        mealsEl.appendChild(mealEl);
     }
 
     _displayNewWorkout(workout) {
@@ -143,7 +167,7 @@ class CalorieTracker {
         </div>
       </div>`;
 
-      workoutsEl.appendChild(workoutEl);
+        workoutsEl.appendChild(workoutEl);
     }
 
     _render() {
@@ -185,6 +209,10 @@ class App {
         document.getElementById('meal-form').addEventListener('submit', this._newItem.bind(this, 'meal'));
 
         document.getElementById('workout-form').addEventListener('submit', this._newItem.bind(this, 'workout'));
+
+        document.getElementById('meal-items').addEventListener('click', this._removeItem.bind(this, 'meal'));
+
+        document.getElementById('workout-items').addEventListener('click', this._removeItem.bind(this, 'workout'));
     }
 
     _newItem(type, event) {
@@ -195,12 +223,12 @@ class App {
 
         // Validate input for name and calories
         // - alert user if one or more fields are empty
-        if(name.value === '' || calories.value === '') {
+        if (name.value === '' || calories.value === '') {
             alert('Please fill in all fields');
             return;
         }
 
-        if(type === 'meal') {
+        if (type === 'meal') {
             // Create new instance of meal and get name value and calories value (number)
             const meal = new Meal(name.value, +calories.value);
             this._tracker.addMeal(meal);
@@ -210,7 +238,7 @@ class App {
             const workout = new Workout(name.value, +calories.value);
             this._tracker.addWorkout(workout);
         }
-        
+
 
         // Clear form
         name.value = '';
@@ -221,7 +249,21 @@ class App {
         const bsCollapse = new bootstrap.Collapse(collapseItem, {
             toggle: true
         });
-    
+
+    }
+
+    _removeItem(type, event) {
+        if (event.target.classList.contains('delete') || event.target.classList.contains('fa-xmark')) {
+            if (confirm('Are you sure you want to delete this item?')) {
+                const id = event.target.closest('.card').getAttribute('data-id');
+
+                type === 'meal'
+                    ? this._tracker.removeMeal(id)
+                    : this._tracker.removeWorkout(id);
+
+                event.target.closest('.card').remove();
+            }
+        }
     }
 }
 
