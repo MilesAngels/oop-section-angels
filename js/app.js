@@ -431,7 +431,7 @@ class App {
 
 
         // Clear form
-        name.value = '';
+         name.value = '';
         calories.value = '';
 
         // Collapse workout form on submit
